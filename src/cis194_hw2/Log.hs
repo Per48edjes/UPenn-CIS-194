@@ -30,9 +30,8 @@ testParse parse n file = take n . parse <$> readFile file
 -- | @testWhatWentWrong p w f@ tests the log file parser @p@ and
 --   warning message extractor @w@ by running them on the log file
 --   @f@.
-testWhatWentWrong :: (String -> [LogMessage])
-                  -> ([LogMessage] -> [String])
+testWhatWentWrong :: (String -> [LogMessage])         -- parse
+                  -> ([LogMessage] -> [Maybe String]) -- whatWentWrong
                   -> FilePath
-                  -> IO [String]
-testWhatWentWrong parse whatWentWrong file
-  = whatWentWrong . parse <$> readFile file
+                  -> IO [Maybe String]
+testWhatWentWrong parse whatWentWrong file = whatWentWrong . parse <$> readFile file

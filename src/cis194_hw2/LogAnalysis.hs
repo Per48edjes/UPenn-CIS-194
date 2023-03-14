@@ -43,12 +43,9 @@ filterHelper :: LogMessage -> Bool
 filterHelper (LogMessage (Error sev) _ _) = sev >= 50
 filterHelper _ = False
 
-messageExtractor :: LogMessage -> String
-messageExtractor (LogMessage _ _ msg) = msg
-messageExtractor _ = ""  -- This seems like a hack
+messageExtractor :: LogMessage -> Maybe String
+messageExtractor (LogMessage _ _ msg) = Just msg
+messageExtractor _ = Nothing
 
-whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong :: [LogMessage] -> [Maybe String]
 whatWentWrong = map messageExtractor . filter filterHelper . inOrder . build
-
--- Q: Why is Haskell complaining about unmatched patterns after the filter?
--- whatWentWrong = map (\(LogMessage (Error _) _ msg) -> msg) . filter filterHelper . inOrder . build
