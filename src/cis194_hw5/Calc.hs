@@ -1,26 +1,25 @@
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 
 import           ExprT
+import           VarExprT
 import           Parser  (parseExp)
 
 import qualified StackVM
+import qualified Data.Map as M
+import System.Console.Terminfo (functionKey)
 
 -- Exercise 1
 eval :: ExprT -> Integer
-eval (Mul x y) = eval x * eval y
-eval (Add x y) = eval x + eval y
-eval (Lit x)   = x
+eval (ExprT.Mul x y) = eval x * eval y
+eval (ExprT.Add x y) = eval x + eval y
+eval (ExprT.Lit x)   = x
 
 
 -- Exercise 2
 evalStr :: String -> Maybe Integer
-evalStr = fmap eval . parseExp Lit Add Mul
-{-
-evalStr s =
- case parseExp Lit Add Mul s of
-   Nothing-> Nothing
-   Just x -> Just $ eval x
--}
+evalStr = fmap eval . parseExp ExprT.Lit ExprT.Add ExprT.Mul
 
 
 -- Exercise 3
@@ -30,9 +29,9 @@ class Expr a where
     mul :: a -> a -> a
 
 instance Expr ExprT where
-    lit = Lit
-    add = Add
-    mul = Mul
+    lit = ExprT.Lit
+    add = ExprT.Add
+    mul = ExprT.Mul
 
 
 -- Exercise 4
@@ -68,3 +67,28 @@ instance Expr StackVM.Program where
 
 compile :: String -> Maybe StackVM.Program
 compile = parseExp lit add mul
+
+
+-- Exercise 6
+class HasVars a where
+    var :: String -> a
+
+instance HasVars VarExprT where
+    var = Var
+
+instance Expr VarExprT where
+    lit = VarExprT.Lit
+    add = VarExprT.Add
+    mul = VarExprT.Mul
+
+instance HasVars (M.Map String Integer -> Maybe Integer) where
+    var = M.lookup
+
+instance Expr (M.Map String Integer -> Maybe Integer) where
+    lit n m = Just n
+    add e1 e2 m = (+) <$> e1 m <*> e2 m
+    mul e1 e2 m = (*) <$> e1 m <*> e2 m
+
+-- Test function for Exercise 6
+withVars :: [(String, Integer)] -> (M.Map String Integer -> Maybe Integer) -> Maybe Integer
+withVars vs exp = exp $ M.fromList vs
