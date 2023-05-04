@@ -1,9 +1,12 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-missing-methods #-}
+
 -- Exercise 1
 fib :: Integer -> Integer
 fib n
-    | n == 0 = 0
-    | n == 1 = 1
-    | otherwise = fib (n - 1) + fib (n - 2)
+  | n == 0 = 0
+  | n == 1 = 1
+  | otherwise = fib (n - 1) + fib (n - 2)
 
 fibs1 :: [Integer]
 fibs1 = map fib [0 ..]
@@ -19,10 +22,10 @@ streamToList :: Stream a -> [a]
 streamToList (Cons x rest) = x : streamToList rest
 
 instance (Show a) => Show (Stream a) where
-    show = show . take 100 . streamToList
+  show = show . take 100 . streamToList
 
 instance Functor Stream where
-    fmap = streamMap
+  fmap = streamMap
 
 -- Exercise 4
 streamRepeat :: a -> Stream a
@@ -44,40 +47,23 @@ interleaveStreams (Cons x1 rest1) s2 = Cons x1 (interleaveStreams s2 rest1)
 ruler :: Stream Integer
 ruler = interleaveStreams (streamRepeat 0) ((+ 1) <$> ruler)
 
-{-
-wholes :: Stream Integer
-wholes = streamFromSeed (+ 1) 1
-
-ruler' :: Integer -> Integer
-ruler' n
-    | odd n = 0
-    | otherwise = 1 + ruler' (n `div` 2)
-
-ruler :: Stream Integer
-ruler = ruler' <$> wholes
--}
-
-{-
-n    a(n)
-----------
-1      0
-2      1 = 1 + a(1) = 1 + 0
-3      0
-4      2 = 1 + a(2) = 1 + 1
-5      0
-6      1 = 1 + a(3) = 1 + 0
-7      0
-8      3 = 1 + a(4) = 1 + 2
-9      0
-10     1
-11     0
-12     2 = 1 + a(6)
-13     0
-14
-15     0
-16     0
--}
-
--- TODO: Exercise 6
+-- Exercise 6
 x :: Stream Integer
 x = Cons 0 (Cons 1 (streamRepeat 0))
+
+one :: Stream Integer
+one = Cons 1 (streamRepeat 0)
+
+instance Num (Stream Integer) where
+  fromInteger n = Cons n (streamRepeat 0)
+  negate (Cons x rest) = Cons (-x) (negate rest)
+  (+) (Cons x xs) (Cons y ys) = Cons (x + y) (xs + ys)
+  (*) a@(Cons x xs) b@(Cons y ys) = Cons (x * y) (((* x) <$> ys) + (xs * b))
+
+instance Fractional (Stream Integer) where
+  (/) a@(Cons x xs) b@(Cons y ys) = Cons (x `div` y) ((one / y') * (xs - ((a / b) * ys)))
+    where
+      y' = Cons y (streamRepeat 0)
+
+fibs3 :: Stream Integer
+fibs3 = x / (one - x - (x ^ 2))
