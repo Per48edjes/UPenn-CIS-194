@@ -1,3 +1,9 @@
+{-# LANGUAGE FlexibleInstances #-}
+
+module JoinList where
+
+import Buffer
+import Editor
 import Scrabble
 import Sized
 
@@ -60,3 +66,34 @@ takeJ i (Append s left right)
 -- Exercise 3
 scoreLine :: String -> JoinList Score String
 scoreLine s = Single (scoreString s) s
+
+-- Exercise 4
+instance Buffer (JoinList (Score, Size) String) where
+    toString Empty = ""
+    toString (Single _ s) = s
+    toString (Append _ left right) = toString left ++ toString right
+
+    fromString = foldr ((+++) . (\l -> Single (scoreString l, Size 1) l)) Empty . lines
+
+    line = indexJ
+
+    replaceLine i s jl = case indexJ i jl of
+        Nothing -> jl
+        Just _ -> takeJ i jl +++ fromString s +++ dropJ (i + 1) jl
+
+    numLines = getSize . snd . tag
+
+    value = getScore . fst . tag
+
+main = runEditor editor start
+  where
+    start =
+        ( fromString $
+            unlines
+                [ "This buffer is for notes you don't want to save, and for"
+                , "evaluation of steam valve coefficients."
+                , "To load a different file, type the character L followed"
+                , "by the name of the file."
+                ]
+        ) ::
+            JoinList (Score, Size) String

@@ -27,3 +27,6 @@ score (toUpper -> c)
 
 scoreString :: String -> Score
 scoreString = mconcat . map score
+
+getScore :: Score -> Int
+getScore (Score x) = x
