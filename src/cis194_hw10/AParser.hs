@@ -89,10 +89,12 @@ instance Applicative Parser where
 
 -- Exercise 3
 abParser :: Parser (Char, Char)
-abParser = undefined
+abParser = (,) <$> char 'a' <*> char 'b'
 
 abParser_ :: Parser ()
-abParser_ = undefined
+abParser_ = const () <$ char 'a' <*> char 'b'
 
-intPair :: Parser [Int]
-intPair = undefined
+intPair :: Parser [Integer]
+intPair = (\x _ y -> [x, y]) <$> posInt <*> char ' ' <*> posInt
+
+-- Exercise 4
