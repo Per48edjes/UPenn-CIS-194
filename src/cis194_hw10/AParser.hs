@@ -98,3 +98,14 @@ intPair :: Parser [Integer]
 intPair = (\x _ y -> [x, y]) <$> posInt <*> char ' ' <*> posInt
 
 -- Exercise 4
+instance Alternative Parser where
+    empty = Parser f
+      where
+        f xs = Nothing
+    p1 <|> p2 = Parser h
+      where
+        h xs = runParser p1 xs <|> runParser p2 xs
+
+-- Exercise 5
+intOrUppercase :: Parser ()
+intOrUppercase = (() <$ posInt) <|> (() <$ satisfy isUpper)
