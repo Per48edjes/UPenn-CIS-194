@@ -51,3 +51,16 @@ invade bf = do
         else invade bf'
 
 -- Exercise 4
+successProb :: Battlefield -> Rand StdGen Double
+successProb bf = do
+    results <- replicateM 1000 $ invade bf
+    return $ fromIntegral (sum . map indicatorRandomVar $ results) / 1000
+  where
+    indicatorRandomVar :: Battlefield -> Integer
+    indicatorRandomVar bf
+        | defenders bf == 0 = 0
+        | otherwise = 1
+
+-- Exercise 5
+-- Will need to review my probability fundamentals before trying to find an
+-- analytical solution! ;)
